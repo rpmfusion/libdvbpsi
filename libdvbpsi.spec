@@ -3,11 +3,12 @@
 Summary: 	Library for MPEG TS and DVB PSI tables decoding and generation
 Name: 		libdvbpsi
 Version: 	0.1.6
-Release: 	3%{?dist}
+Release: 	3%{?dist}.1
 License: 	GPLv2+
-Group: 		System Environment/Libraries
+Group: 	        System Environment/Libraries
 URL: 		http://www.videolan.org/developers/libdvbpsi.html
 Source0: 	http://download.videolan.org/pub/libdvbpsi/%{version}/%{real_name}-%{version}.tar.bz2
+Patch1:         libdvbpsi-0.1.6-docsvg.patch
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	graphviz doxygen
 
@@ -31,8 +32,8 @@ This package contains development files for %{name}
 
 %prep
 %setup -q -n %{real_name}-%{version}
-
-
+%patch1 -p1 -b .docsvg
+touch -r aclocal.m4 configure.ac
 
 # -----------------------------------------------------------------------------
 
@@ -72,6 +73,10 @@ rm -rf $RPM_BUILD_ROOT
 # -----------------------------------------------------------------------------
 
 %changelog
+* Mon Sep 08 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 0.1.6-3.1
+- Generate SVG instead of PNG in documentation (RHEL graphviz can't write PNG);
+  Patch is a modified version of one found in the elvn repo (Lubomir Rintel)
+
 * Mon Aug 04 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 0.1.6-3
 - rebuild
 
