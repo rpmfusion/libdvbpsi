@@ -3,7 +3,7 @@
 Summary: 	Library for MPEG TS and DVB PSI tables decoding and generation
 Name: 		libdvbpsi
 Version: 	0.1.6
-Release: 	5%{?dist}
+Release: 	6%{?dist}
 License: 	GPLv2+
 Group: 		System Environment/Libraries
 URL: 		http://www.videolan.org/developers/libdvbpsi.html
@@ -72,6 +72,9 @@ rm -rf $RPM_BUILD_ROOT
 # -----------------------------------------------------------------------------
 
 %changelog
+* Sat Oct 17 2009 kwizart < kwizart at gmail.com > - 0.1.6-6
+- Rebuild
+
 * Sun Apr  5 2009 kwizart < kwizart at gmail.com > - 0.1.6-5
 - Rebuild
 
