@@ -1,13 +1,11 @@
-%define real_name libdvbpsi5
-
 Summary: 	Library for MPEG TS and DVB PSI tables decoding and generation
 Name: 		libdvbpsi
-Version: 	0.1.6
-Release: 	6%{?dist}
+Version: 	0.1.7
+Release: 	1%{?dist}
 License: 	GPLv2+
 Group: 		System Environment/Libraries
 URL: 		http://www.videolan.org/developers/libdvbpsi.html
-Source0: 	http://download.videolan.org/pub/libdvbpsi/%{version}/%{real_name}-%{version}.tar.bz2
+Source0: 	http://download.videolan.org/pub/libdvbpsi/%{version}/%{name}-%{version}.tar.bz2
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	graphviz doxygen
 
@@ -30,7 +28,7 @@ This package contains development files for %{name}
 # -----------------------------------------------------------------------------
 
 %prep
-%setup -q -n %{real_name}-%{version}
+%setup -q
 
 
 
@@ -68,10 +66,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc doc/doxygen/html
 %{_includedir}/dvbpsi/
 %{_libdir}/lib*.so
+%{_libdir}/pkgconfig/libdvbpsi.pc
 
 # -----------------------------------------------------------------------------
 
 %changelog
+* Sat Apr 24 2010 Nicolas Chauvet <kwizart@fedoraproject.org> - 0.1.7-1
+- Update to 0.1.7
+
 * Sat Oct 17 2009 kwizart < kwizart at gmail.com > - 0.1.6-6
 - Rebuild
 
