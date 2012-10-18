@@ -1,0 +1,83 @@
+From 259e2a12fafe4c09ea3265fd686f308db4c31a60 Mon Sep 17 00:00:00 2001
+From: Jean-Paul Saman <jpsaman@videolan.org>
+Date: Tue, 16 Oct 2012 10:56:26 +0200
+Subject: [PATCH] dvbpsi_decoder_t: align DVBPSI_DECODER_COMMON
+
+---
+ src/dvbpsi.h             | 11 ++++++-----
+ src/tables/nit_private.h |  4 ++--
+ src/tables/pmt_private.h |  4 ++--
+ 3 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/src/dvbpsi.h b/src/dvbpsi.h
+index 3118da8..f373103 100644
+--- a/src/dvbpsi.h
++++ b/src/dvbpsi.h
+@@ -197,16 +197,17 @@ typedef void (* dvbpsi_callback_gather_t)(dvbpsi_t *p_dvbpsi,  /*!< pointer to d
+  * decoder.
+  */
+ #define DVBPSI_DECODER_COMMON                                                     \
+-    dvbpsi_callback_gather_t  pf_gather;/*!< PSI decoder's callback */            \
+-    int      i_section_max_size;   /*!< Max size of a section for this decoder */ \
+-    uint8_t  i_continuity_counter; /*!< Continuity counter */                     \
+     bool     b_discontinuity;      /*!< Discontinuity flag */                     \
+-    dvbpsi_psi_section_t *p_current_section; /*!< Current section */              \
+     bool     b_current_valid;      /*!< Current valid indicator */                \
++    uint8_t  i_continuity_counter; /*!< Continuity counter */                     \
+     uint8_t  i_last_section_number;/*!< Last received section number */           \
++    dvbpsi_psi_section_t *p_current_section; /*!< Current section */              \
+     dvbpsi_psi_section_t *p_sections; /*!< List of received PSI sections */       \
++    dvbpsi_callback_gather_t  pf_gather;/*!< PSI decoder's callback */            \
++    int      i_section_max_size;   /*!< Max size of a section for this decoder */ \
+     int      i_need;               /*!< Bytes needed */                           \
+-    bool     b_complete_header;    /*!< Flag for header completion */
++    bool     b_complete_header;    /*!< Flag for header completion */             \
++    uint8_t  i_reserved[3];        /*!< Reserved */
+ 
+ struct dvbpsi_decoder_s
+ {
+diff --git a/src/tables/nit_private.h b/src/tables/nit_private.h
+index 8eadce7..6c80e35 100644
+--- a/src/tables/nit_private.h
++++ b/src/tables/nit_private.h
+@@ -39,14 +39,14 @@ typedef struct dvbpsi_nit_decoder_s
+ {
+     DVBPSI_DECODER_COMMON
+ 
+-    uint16_t                      i_network_id;
+-
+     dvbpsi_nit_callback           pf_nit_callback;
+     void *                        p_cb_data;
+ 
+     dvbpsi_nit_t                  current_nit;
+     dvbpsi_nit_t *                p_building_nit;
+ 
++    uint16_t                      i_network_id;
++
+ } dvbpsi_nit_decoder_t;
+ 
+ /*****************************************************************************
+diff --git a/src/tables/pmt_private.h b/src/tables/pmt_private.h
+index ed75a8b..4f10ecc 100644
+--- a/src/tables/pmt_private.h
++++ b/src/tables/pmt_private.h
+@@ -37,14 +37,14 @@ typedef struct dvbpsi_pmt_decoder_s
+ {
+     DVBPSI_DECODER_COMMON
+ 
+-    uint16_t                      i_program_number;
+-
+     dvbpsi_pmt_callback           pf_pmt_callback;
+     void *                        p_cb_data;
+ 
+     dvbpsi_pmt_t                  current_pmt;
+     dvbpsi_pmt_t *                p_building_pmt;
+ 
++    uint16_t                      i_program_number;
++
+ } dvbpsi_pmt_decoder_t;
+ 
+ /*****************************************************************************
+-- 
+1.7.11.7
+

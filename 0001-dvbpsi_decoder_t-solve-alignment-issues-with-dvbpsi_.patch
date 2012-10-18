@@ -1,0 +1,209 @@
+From 9d20b904c0649cae0c71cef5177113821dfcc71f Mon Sep 17 00:00:00 2001
+From: Jean-Paul Saman <jpsaman@videolan.org>
+Date: Tue, 16 Oct 2012 10:56:26 +0200
+Subject: [PATCH] dvbpsi_decoder_t: solve alignment issues with
+ dvbpsi_decoder_t casting.
+
+Repack DVBPSI_DECODER_COMMON to be byte aligned and add some checks to
+do clever casting.
+---
+ src/dvbpsi.c             |  3 +-
+ src/dvbpsi.h             | 82 +++++++++++++++++++++++++++++++++++-------------
+ src/tables/nit_private.h |  4 +--
+ src/tables/pmt_private.h |  4 +--
+ 4 files changed, 66 insertions(+), 27 deletions(-)
+
+diff --git a/src/dvbpsi.c b/src/dvbpsi.c
+index ffbfaca..d45802e 100644
+--- a/src/dvbpsi.c
++++ b/src/dvbpsi.c
+@@ -170,7 +170,7 @@ void dvbpsi_delete(dvbpsi_t *p_dvbpsi)
+  * dvbpsi_decoder_new
+  *****************************************************************************/
+ #define DVBPSI_INVALID_CC (0xFF)
+-dvbpsi_decoder_t *dvbpsi_decoder_new(dvbpsi_callback_gather_t pf_gather,
++void *dvbpsi_decoder_new(dvbpsi_callback_gather_t pf_gather,
+     const int i_section_max_size, const bool b_discontinuity, const size_t psi_size)
+ {
+     assert(psi_size >= sizeof(dvbpsi_decoder_t));
+@@ -179,6 +179,7 @@ dvbpsi_decoder_t *dvbpsi_decoder_new(dvbpsi_callback_gather_t pf_gather,
+     if (p_decoder == NULL)
+         return NULL;
+ 
++    memcpy(&p_decoder->i_magic[0], "psi", 3);
+     p_decoder->pf_gather = pf_gather;
+     p_decoder->p_current_section = NULL;
+     p_decoder->i_section_max_size = i_section_max_size;
+diff --git a/src/dvbpsi.h b/src/dvbpsi.h
+index 3118da8..8a019e3 100644
+--- a/src/dvbpsi.h
++++ b/src/dvbpsi.h
+@@ -43,6 +43,16 @@ extern "C" {
+ #endif
+ 
+ /*****************************************************************************
++ * Helper for GCC version checks borrowed from VLC.
++ *****************************************************************************/
++#ifdef __GNUC__
++# define DVBPSI_GCC_VERSION(maj,min) \
++    ((__GNUC__ > (maj)) || (__GNUC__ == (maj) && __GNUC_MINOR__ >= (min)))
++#else
++# define DVBPSI_GCC_VERSION(maj,min) (0)
++#endif
++
++/*****************************************************************************
+  * dvbpsi_t
+  *****************************************************************************/
+ /*!
+@@ -90,7 +100,22 @@ typedef struct dvbpsi_decoder_s dvbpsi_decoder_t;
+  * \def DVBPSI_DECODER(x)
+  * \brief Helper macro for casting a private decoder into a dvbpsi_decoder_t
+  */
+-#define DVBPSI_DECODER(x) ((dvbpsi_decoder_t *)(x))
++/* Clever cast borrowed from VLC */
++#if DVBPSI_GCC_VERSION(4,0)
++# ifndef __cplusplus
++#  define DVBPSI_DECODER( x ) \
++    __builtin_choose_expr( \
++        __builtin_offsetof(__typeof__(*(x)), i_magic), \
++        (void)0, \
++        (dvbpsi_decoder_t *)(x))
++# else
++#  define DVBPSI_DECODER( x ) \
++    ((dvbpsi_decoder_t *)(x) \
++      + 0 * __builtin_offsetof(__typeof__(*(x)), i_magic))
++# endif
++#else
++# define DVBPSI_DECODER(x) ((dvbpsi_decoder_t *)(x))
++#endif
+ 
+ /*****************************************************************************
+  * dvbpsi_t
+@@ -187,6 +212,28 @@ typedef void (* dvbpsi_callback_gather_t)(dvbpsi_t *p_dvbpsi,  /*!< pointer to d
+                             dvbpsi_psi_section_t* p_section);  /*!< pointer to psi section */
+ 
+ /*****************************************************************************
++ * DVBPSI_DECODER_COMMON
++ *****************************************************************************/
++#define DVBPSI_DECODER_COMMON                                                     \
++/*!                                                                               \
++ * \name DVBPSI_DECODER_COMMON                                                    \
++ * these members are common for all dvbpsi_decoder_t                              \
++ */                                                                               \
++/**@{*/                                                                           \
++    uint8_t  i_magic[3];           /*!< Reserved magic value */                   \
++    bool     b_complete_header;    /*!< Flag for header completion */             \
++    bool     b_discontinuity;      /*!< Discontinuity flag */                     \
++    bool     b_current_valid;      /*!< Current valid indicator */                \
++    uint8_t  i_continuity_counter; /*!< Continuity counter */                     \
++    uint8_t  i_last_section_number;/*!< Last received section number */           \
++    dvbpsi_psi_section_t *p_current_section; /*!< Current section */              \
++    dvbpsi_psi_section_t *p_sections; /*!< List of received PSI sections */       \
++    dvbpsi_callback_gather_t  pf_gather;/*!< PSI decoder's callback */            \
++    int      i_section_max_size;   /*!< Max size of a section for this decoder */ \
++    int      i_need;               /*!< Bytes needed */                           \
++/**@}*/
++
++/*****************************************************************************
+  * struct dvbpsi_decoder_s
+  *****************************************************************************/
+ /*!
+@@ -196,18 +243,6 @@ typedef void (* dvbpsi_callback_gather_t)(dvbpsi_t *p_dvbpsi,  /*!< pointer to d
+  * This structure shouldn't be used but if you want to write an external
+  * decoder.
+  */
+-#define DVBPSI_DECODER_COMMON                                                     \
+-    dvbpsi_callback_gather_t  pf_gather;/*!< PSI decoder's callback */            \
+-    int      i_section_max_size;   /*!< Max size of a section for this decoder */ \
+-    uint8_t  i_continuity_counter; /*!< Continuity counter */                     \
+-    bool     b_discontinuity;      /*!< Discontinuity flag */                     \
+-    dvbpsi_psi_section_t *p_current_section; /*!< Current section */              \
+-    bool     b_current_valid;      /*!< Current valid indicator */                \
+-    uint8_t  i_last_section_number;/*!< Last received section number */           \
+-    dvbpsi_psi_section_t *p_sections; /*!< List of received PSI sections */       \
+-    int      i_need;               /*!< Bytes needed */                           \
+-    bool     b_complete_header;    /*!< Flag for header completion */
+-
+ struct dvbpsi_decoder_s
+ {
+     DVBPSI_DECODER_COMMON
+@@ -217,22 +252,25 @@ struct dvbpsi_decoder_s
+  * dvbpsi_decoder_new
+  *****************************************************************************/
+ /*!
+- * \fn dvbpsi_decoder_t *dvbpsi_decoder_new(dvbpsi_callback_gather_t pf_gather,
++ * \fn void *dvbpsi_decoder_new(dvbpsi_callback_gather_t pf_gather,
+  *     const int i_section_max_size, const bool b_discontinuity, const size_t psi_size);
+- * \brief Create a new dvbpsi_decoder_t.
++ * \brief Create a new (private) dvbpsi decoder.
+  * \param pf_gather pointer to gather function for PSI decoder.
+  * \param i_section_max_size Max size of a section for this decoder
+  * \param b_discontinuity Discontinuity flag
+  * \param psi_size size of new PSI struct, eg: sizeof(dvbpsi_pat_t)
+- * \return pointer to dvbpsi_decoder_t
++ * \return pointer to memory of size 'psi_size' that can be casted into a dvbpsi_decoder_t.
+  *
+- * Creates a dvbpsi_decoder_t pointer to struct dvbpsi_decoder_s. It should be
+- * delete with @see dvbpsi_decoder_delete() function.
++ * Creates a void pointer that points to a private dvbpsi decoder struct (eg: dvbpsi_pat_t).
++ * The first elements in this newly created decoder should contain DVBPSI_DECODER_COMMON, which
++ * corresponds to a dvbpsi_decoder_t.
++ * Upon return the pointer should be casted to the correct type. Delete the pointer
++ * with @see dvbpsi_decoder_delete() function.
+  */
+-dvbpsi_decoder_t *dvbpsi_decoder_new(dvbpsi_callback_gather_t pf_gather,
+-                                    const int i_section_max_size,
+-                                    const bool b_discontinuity,
+-                                    const size_t psi_size);
++void *dvbpsi_decoder_new(dvbpsi_callback_gather_t pf_gather,
++                         const int i_section_max_size,
++                         const bool b_discontinuity,
++                         const size_t psi_size);
+ 
+ /*****************************************************************************
+  * dvbpsi_decoder_delete
+diff --git a/src/tables/nit_private.h b/src/tables/nit_private.h
+index 8eadce7..6c80e35 100644
+--- a/src/tables/nit_private.h
++++ b/src/tables/nit_private.h
+@@ -39,14 +39,14 @@ typedef struct dvbpsi_nit_decoder_s
+ {
+     DVBPSI_DECODER_COMMON
+ 
+-    uint16_t                      i_network_id;
+-
+     dvbpsi_nit_callback           pf_nit_callback;
+     void *                        p_cb_data;
+ 
+     dvbpsi_nit_t                  current_nit;
+     dvbpsi_nit_t *                p_building_nit;
+ 
++    uint16_t                      i_network_id;
++
+ } dvbpsi_nit_decoder_t;
+ 
+ /*****************************************************************************
+diff --git a/src/tables/pmt_private.h b/src/tables/pmt_private.h
+index ed75a8b..4f10ecc 100644
+--- a/src/tables/pmt_private.h
++++ b/src/tables/pmt_private.h
+@@ -37,14 +37,14 @@ typedef struct dvbpsi_pmt_decoder_s
+ {
+     DVBPSI_DECODER_COMMON
+ 
+-    uint16_t                      i_program_number;
+-
+     dvbpsi_pmt_callback           pf_pmt_callback;
+     void *                        p_cb_data;
+ 
+     dvbpsi_pmt_t                  current_pmt;
+     dvbpsi_pmt_t *                p_building_pmt;
+ 
++    uint16_t                      i_program_number;
++
+ } dvbpsi_pmt_decoder_t;
+ 
+ /*****************************************************************************
+-- 
+1.7.11.7
+
