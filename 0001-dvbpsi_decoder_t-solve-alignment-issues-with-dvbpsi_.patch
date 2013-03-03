@@ -1,17 +1,20 @@
-From 9d20b904c0649cae0c71cef5177113821dfcc71f Mon Sep 17 00:00:00 2001
+From 61b43151b3ee99ebba38b038e9e92d34766cf897 Mon Sep 17 00:00:00 2001
 From: Jean-Paul Saman <jpsaman@videolan.org>
 Date: Tue, 16 Oct 2012 10:56:26 +0200
-Subject: [PATCH] dvbpsi_decoder_t: solve alignment issues with
+Subject: [PATCH 1/2] dvbpsi_decoder_t: solve alignment issues with
  dvbpsi_decoder_t casting.
 
 Repack DVBPSI_DECODER_COMMON to be byte aligned and add some checks to
 do clever casting.
+The TOT and SIS table structure definition need to be packed explicitly for use on ARM and MIPS platforms.
 ---
  src/dvbpsi.c             |  3 +-
  src/dvbpsi.h             | 82 +++++++++++++++++++++++++++++++++++-------------
  src/tables/nit_private.h |  4 +--
  src/tables/pmt_private.h |  4 +--
- 4 files changed, 66 insertions(+), 27 deletions(-)
+ src/tables/sis.h         |  2 +-
+ src/tables/tot.h         |  2 +-
+ 6 files changed, 68 insertions(+), 29 deletions(-)
 
 diff --git a/src/dvbpsi.c b/src/dvbpsi.c
 index ffbfaca..d45802e 100644
@@ -204,6 +207,32 @@ index ed75a8b..4f10ecc 100644
  } dvbpsi_pmt_decoder_t;
  
  /*****************************************************************************
+diff --git a/src/tables/sis.h b/src/tables/sis.h
+index 16f2298..a339a6c 100644
+--- a/src/tables/sis.h
++++ b/src/tables/sis.h
+@@ -97,7 +97,7 @@ typedef struct dvbpsi_sis_s
+   /* FIXME: alignment stuffing */
+   uint32_t i_ecrc; /*!< CRC 32 of decrypted splice_info_section */
+ 
+-} dvbpsi_sis_t;
++} __attribute__((packed)) dvbpsi_sis_t;
+ 
+ /*****************************************************************************
+  * Splice Commands
+diff --git a/src/tables/tot.h b/src/tables/tot.h
+index bb2a760..6ccf009 100644
+--- a/src/tables/tot.h
++++ b/src/tables/tot.h
+@@ -67,7 +67,7 @@ typedef struct dvbpsi_tot_s
+ 
+     uint32_t      i_crc;                          /*!< CRC_32 (TOT only) */
+ 
+-} dvbpsi_tot_t;
++} __attribute__((packed)) dvbpsi_tot_t;
+ 
+ /*****************************************************************************
+  * dvbpsi_tot_callback
 -- 
 1.7.11.7
 
