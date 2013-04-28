@@ -1,17 +1,13 @@
-%global pre _pre3
-%global _default_patch_fuzz 2
+#global pre _pre3
 
 Summary: 	Library for MPEG TS and DVB PSI tables decoding and generation
 Name: 		libdvbpsi
-Version: 	1.0.0
-Release: 	0.2%{?pre}%{?dist}
+Version: 	1.1.0
+Release: 	1%{?pre}%{?dist}
 License: 	LGPLv2+
 Group: 		System Environment/Libraries
 URL: 		http://www.videolan.org/developers/libdvbpsi.html
 Source0: 	http://download.videolan.org/pub/libdvbpsi/%{version}/%{name}-%{version}%{?pre}.tar.bz2
-Patch0:         0001-dvbpsi_decoder_t-solve-alignment-issues-with-dvbpsi_.patch
-Patch1:         0002-dvbinfo-udp.c-use-sockaddr_storage-type-instead-of-s.patch
-BuildRoot: 	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	graphviz doxygen
 
 %package devel
@@ -19,7 +15,6 @@ Summary: 	Development package for %{name}
 Group: 		Development/Libraries
 Requires: 	%{name} = %{version}-%{release}
 
-# -----------------------------------------------------------------------------
 
 %description
 libdvbpsi is a very simple and fully portable library designed for
@@ -30,55 +25,47 @@ libdvbpsi is a very simple and fully portable library designed for
 MPEG TS and DVB PSI table decoding and generation.
 This package contains development files for %{name}
 
-# -----------------------------------------------------------------------------
 
 %prep
 %setup -q -n %{name}-%{version}%{?pre}
-%patch0 -p1
-%patch1 -p1
 
 
-# -----------------------------------------------------------------------------
 
 %build
 %configure --disable-dependency-tracking --disable-static
 make %{?_smp_mflags}
 make doc
 
-# -----------------------------------------------------------------------------
 
 %install
-rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT INSTALL="install -p"
 rm -f $RPM_BUILD_ROOT%{_libdir}/lib*.la
 
-# -----------------------------------------------------------------------------
-
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-# -----------------------------------------------------------------------------
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(-,root,root,-)
 %doc AUTHORS COPYING ChangeLog README
 %{_libdir}/%{name}.so.*
 
 %files devel
-%defattr(-,root,root,-)
 %doc doc/doxygen/html
 %{_includedir}/dvbpsi/
 %{_libdir}/lib*.so
 %{_libdir}/pkgconfig/libdvbpsi.pc
 
-# -----------------------------------------------------------------------------
 
 %changelog
-* Sun Mar 03 2013 Nicolas Chauvet <kwizart@gmail.com> - 1.0.0-0.2_pre3
-- Mass rebuilt for Fedora 19 Features
+* Sun Apr 28 2013 Nicolas Chauvet <kwizart@gmail.com> - 1.1.0-1
+- Update to 1.1.0
+
+* Sun Mar 10 2013 Nicolas Chauvet <kwizart@gmail.com> - 1.0.0-1
+- Update to 1.0.0
+- Clean-up spec file
+
+* Sun Nov 11 2012 Nicolas Chauvet <kwizart@gmail.com> - 1.0.0-0.2_pre3
+- Update to _pre3 as tagged in git
 
 * Thu Oct 18 2012 Nicolas Chauvet <kwizart@gmail.com> - 1.0.0-0.1_pre2
 - Update to 1.0.0_pre2
