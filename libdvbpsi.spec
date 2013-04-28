@@ -1,16 +1,11 @@
-%global pre _pre3
-%global _default_patch_fuzz 2
-
 Summary: 	Library for MPEG TS and DVB PSI tables decoding and generation
 Name: 		libdvbpsi
-Version: 	1.0.0
-Release: 	0.2%{?pre}%{?dist}
+Version: 	0.2.2
+Release: 	3%{?dist}
 License: 	LGPLv2+
 Group: 		System Environment/Libraries
 URL: 		http://www.videolan.org/developers/libdvbpsi.html
-Source0: 	http://download.videolan.org/pub/libdvbpsi/%{version}/%{name}-%{version}%{?pre}.tar.bz2
-Patch0:         0001-dvbpsi_decoder_t-solve-alignment-issues-with-dvbpsi_.patch
-Patch1:         0002-dvbinfo-udp.c-use-sockaddr_storage-type-instead-of-s.patch
+Source0: 	http://download.videolan.org/pub/libdvbpsi/%{version}/%{name}-%{version}.tar.bz2
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	graphviz doxygen
 
@@ -33,9 +28,8 @@ This package contains development files for %{name}
 # -----------------------------------------------------------------------------
 
 %prep
-%setup -q -n %{name}-%{version}%{?pre}
-%patch0 -p1
-%patch1 -p1
+%setup -q
+
 
 
 # -----------------------------------------------------------------------------
@@ -77,11 +71,8 @@ rm -rf $RPM_BUILD_ROOT
 # -----------------------------------------------------------------------------
 
 %changelog
-* Sun Mar 03 2013 Nicolas Chauvet <kwizart@gmail.com> - 1.0.0-0.2_pre3
-- Mass rebuilt for Fedora 19 Features
-
-* Thu Oct 18 2012 Nicolas Chauvet <kwizart@gmail.com> - 1.0.0-0.1_pre2
-- Update to 1.0.0_pre2
+* Sun Apr 28 2013 Nicolas Chauvet <kwizart@gmail.com> - 0.2.2-3
+- Rebuilt for http://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
 * Wed Jan 25 2012 Nicolas Chauvet <kwizart@gmail.com> - 0.2.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
