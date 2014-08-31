@@ -3,7 +3,7 @@
 Summary: 	Library for MPEG TS and DVB PSI tables decoding and generation
 Name: 		libdvbpsi
 Version: 	1.1.2
-Release: 	1%{?pre}%{?dist}
+Release: 	2%{?pre}%{?dist}
 License: 	LGPLv2+
 Group: 		System Environment/Libraries
 URL: 		http://www.videolan.org/developers/libdvbpsi.html
@@ -57,6 +57,9 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/lib*.la
 
 
 %changelog
+* Sun Aug 31 2014 Sérgio Basto <sergio@serjux.com> - 1.1.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Sun Nov 10 2013 Nicolas Chauvet <kwizart@gmail.com> - 1.1.2-1
 - Update to 1.1.2
 
