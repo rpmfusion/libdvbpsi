@@ -1,14 +1,17 @@
 #global pre _pre3
+%global _default_patch_fuzz 3
 
 Summary: 	Library for MPEG TS and DVB PSI tables decoding and generation
 Name: 		libdvbpsi
 Version: 	1.2.0
-Release: 	1%{?pre}%{?dist}
+Release: 	2%{?pre}%{?dist}
 License: 	LGPLv2+
 Group: 		System Environment/Libraries
 URL: 		http://www.videolan.org/developers/libdvbpsi.html
 Source0: 	http://download.videolan.org/pub/libdvbpsi/%{version}/%{name}-%{version}%{?pre}.tar.bz2
+Patch0:         libdvbpsi-backport-werror_on_debug.patch
 BuildRequires:	graphviz doxygen
+BuildRequires:  libtool
 
 %package devel
 Summary: 	Development package for %{name}
@@ -28,7 +31,8 @@ This package contains development files for %{name}
 
 %prep
 %setup -q -n %{name}-%{version}%{?pre}
-
+%patch0 -p1
+autoreconf -vif
 
 
 %build
@@ -57,6 +61,9 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/lib*.la
 
 
 %changelog
+* Sun Apr 26 2015 Nicolas Chauvet <kwizart@gmail.com> - 1.2.0-2
+- Backport patch to disable Werror - fix f22
+
 * Sat Nov 15 2014 Nicolas Chauvet <kwizart@gmail.com> - 1.2.0-1
 - Update to 1.2.0
 
