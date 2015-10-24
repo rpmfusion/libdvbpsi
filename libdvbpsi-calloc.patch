@@ -1,0 +1,24 @@
+From 5058ea22730a67f03dd253dce89d513bc430bfb6 Mon Sep 17 00:00:00 2001
+From: =?utf8?q?Rafa=C3=ABl=20Carr=C3=A9?= <funman@videolan.org>
+Date: Fri, 5 Sep 2014 12:11:49 +0200
+Subject: [PATCH] dr_50: fix off-by-6
+
+---
+ src/descriptors/dr_50.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/descriptors/dr_50.c b/src/descriptors/dr_50.c
+index a2e491c..9933b08 100644
+--- a/src/descriptors/dr_50.c
++++ b/src/descriptors/dr_50.c
+@@ -70,7 +70,7 @@ dvbpsi_component_dr_t* dvbpsi_DecodeComponentDr(dvbpsi_descriptor_t * p_descript
+     if (p_descriptor->i_length > 6)
+     {
+     	p_decoded->i_text_length = p_descriptor->i_length - 6;
+-    	p_decoded->i_text = calloc(p_decoded->i_text_length - 6, sizeof(uint8_t));
++        p_decoded->i_text = calloc(1, p_decoded->i_text_length);
+         if (!p_decoded->i_text)
+         {
+         	free(p_decoded);
+-- 
+1.7.10.4
