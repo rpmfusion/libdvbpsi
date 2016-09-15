@@ -1,18 +1,20 @@
 Summary: 	Library for MPEG TS and DVB PSI tables decoding and generation
 Name: 		libdvbpsi
 Version: 	1.3.0
-Release: 	1%{?pre}%{?dist}
+Release: 	2%{?pre}%{?dist}
 License: 	LGPLv2+
 Group: 		System Environment/Libraries
 URL: 		http://www.videolan.org/developers/libdvbpsi.html
 Source0: 	http://download.videolan.org/pub/libdvbpsi/%{version}/%{name}-%{version}%{?pre}.tar.bz2
+
+BuildRequires:  gcc
 BuildRequires:	graphviz doxygen
 BuildRequires:  libtool
 
 %package devel
 Summary: 	Development package for %{name}
 Group: 		Development/Libraries
-Requires: 	%{name} = %{version}-%{release}
+Requires: 	%{name}%{_isa} = %{version}-%{release}
 
 
 %description
@@ -32,20 +34,21 @@ autoreconf -vif
 
 %build
 %configure --disable-dependency-tracking --disable-static
-make %{?_smp_mflags}
+%make_build
 make doc
 
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT INSTALL="install -p"
-rm -f $RPM_BUILD_ROOT%{_libdir}/lib*.la
+%make_install INSTALL="install -p"
+rm -f %{buildroot}%{_libdir}/lib*.la
 
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
 
 %files
-%doc AUTHORS COPYING ChangeLog README
+%doc AUTHORS ChangeLog README
+%license COPYING
 %{_libdir}/%{name}.so.*
 
 %files devel
@@ -56,6 +59,9 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/lib*.la
 
 
 %changelog
+* Thu Sep 15 2016 Nicolas Chauvet <kwizart@gmail.com> - 1.3.0-2
+- Spec file clean-up
+
 * Sat Oct 24 2015 Nicolas Chauvet <kwizart@gmail.com> - 1.3.0-1
 - Update to 1.3.0
 
